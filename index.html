@@ -36,13 +36,13 @@
         <div class="panel">
           <div class="form-grid">
             <label>Esporte<select id="sport"><option value="Futebol">Futebol</option><option value="Basquete">Basquete</option></select></label>
-            <label>Competição<input id="competition" placeholder="Ex.: Brasileirão, NBA"></label>
-            <label class="full">Partida<input id="match" placeholder="Ex.: Flamengo x Palmeiras"></label>
+            <label>Competição<select id="competition" disabled><option value="">Aguardando catálogo de competições...</option></select></label>
+            <label class="full">Partida<select id="match" disabled><option value="">Selecione primeiro a competição</option></select></label>
             <label class="full">Tipo de análise<select id="analysis-type"><option>Análise completa</option><option>Mercado específico</option></select></label>
             <label class="full">Mercado (opcional)<input id="market" placeholder="Ex.: Mais de 2.5 gols"></label>
           </div>
           <button class="primary-button" id="analysis-button" disabled>Motor de análise ainda não conectado</button>
-          <p class="helper">A interface está preparada. Para ativar os seis agentes, será necessário configurar um backend seguro e fontes de pesquisa/odds.</p>
+          <p class="helper" id="catalog-status" role="status">As listas serão preenchidas pelo catálogo de partidas fornecido pelo backend de pesquisa. Nenhuma competição ou partida fictícia será adicionada.</p>
         </div>
         <div class="agents-grid">
           <article class="agent-card"><span>01</span><h3>Histórico e dados</h3><p>Forma, confrontos e desempenho.</p></article>
