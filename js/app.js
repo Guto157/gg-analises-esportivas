@@ -21,7 +21,7 @@ async function loadCatalog(){
     catalog=[];
     setOptions(competitionSelect,[],'Catálogo ainda não conectado');
     resetMatchList('Partidas indisponíveis');
-    catalogStatus.textContent='O catálogo automático ainda não está conectado. Quando o backend de pesquisa estiver ativo, as opções aparecerão aqui automaticamente.';
+    catalogStatus.textContent='Não foi possível acessar o catálogo público agora. Tente novamente em instantes.';
   }
 }
 function updateMatches(){
@@ -112,7 +112,7 @@ analysisButton.addEventListener('click',async()=>{
     if(!response.ok)throw new Error(data.error||data.detail||'O backend não conseguiu concluir a análise.');
     renderAnalysis(data);
   }catch(error){
-    analysisPanel.innerHTML='<h2>Não foi possível concluir a análise</h2><p>'+escapeHtml(error.message)+'</p><p class="helper">O motor precisa estar publicado no backend e conectado aos serviços de IA e pesquisa. Nenhuma recomendação fictícia será exibida.</p>';
+    analysisPanel.innerHTML='<h2>Não foi possível concluir a análise</h2><p>'+escapeHtml(error.message)+'</p><p class="helper">Verifique se o Worker está publicado e se o binding gratuito Workers AI está ativo. Se a fonte não trouxer dados suficientes, a análise será inconclusiva.</p>';
   }finally{
     syncAnalysisButton();
   }
