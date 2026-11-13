@@ -1,6 +1,0 @@
-.git/
-.github/
-worker/
-README.md
-wrangler.toml
-.assetsignore
