@@ -55,3 +55,9 @@
 
 /* No histórico, manter somente os cards individuais, sem painel azul ao fundo */
 #page-history > .panel{background:transparent;border:0;padding:0}
+
+/* Filtro de histórico por alavancagem */
+.history-filter-wrap{display:flex;align-items:center;gap:10px;width:min(100%,360px);margin:0 0 16px}
+.history-filter-wrap label{display:block;flex:0 0 auto;color:var(--muted);font-size:11px}
+.history-filter-wrap select{max-width:260px;font-weight:700;background:#142238;border-color:#31516d}
+@media(max-width:600px){.history-filter-wrap{width:100%;gap:8px}.history-filter-wrap select{flex:1;max-width:none}}
