@@ -205,7 +205,8 @@ async function analyze(request, env) {
   const competition = clean(input.competition, 100);
   const match = clean(input.match, 140);
   const market = clean(input.market, 100);
-  const leagueId = clean(input.leagueId, 80);\n  const eventId = clean(input.eventId, 80);
+  const leagueId = clean(input.leagueId, 80);
+  const eventId = clean(input.eventId, 80);
   if (!sport || !competition || !match) {
     return json({ error: "Informe esporte, competição e partida." }, 400);
   }
