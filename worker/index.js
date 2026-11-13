@@ -226,6 +226,7 @@ export default {
     }
     if (url.pathname === "/api/catalog" && request.method === "GET") return catalog(request, env);
     if (url.pathname === "/api/analyze" && request.method === "POST") return analyze(request, env);
+    if (request.method === "GET" || request.method === "HEAD") return env.ASSETS.fetch(request);
     return json({ error: "Rota não encontrada." }, 404);
   }
 };
