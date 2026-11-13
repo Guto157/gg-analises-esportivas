@@ -1,4 +1,39 @@
 const $=s=>document.querySelector(s);const $$=s=>[...document.querySelectorAll(s)];const STORE='gg-analises-entries-v1';let entries=load();
+
+const CATALOG_ENDPOINT='/api/catalog';
+const sportSelect=$('#sport'),competitionSelect=$('#competition'),matchSelect=$('#match'),catalogStatus=$('#catalog-status');
+let catalog=[];
+function setOptions(select,items,placeholder){select.innerHTML='';const first=document.createElement('option');first.value='';first.textContent=placeholder;select.appendChild(first);items.forEach(item=>{const option=document.createElement('option');option.value=String(item.id??item.name);option.textContent=item.name;select.appendChild(option)});select.disabled=items.length===0}
+function resetMatchList(message='Selecione primeiro a competição'){setOptions(matchSelect,[],message)}
+async function loadCatalog(){
+  const sport=sportSelect.value;
+  competitionSelect.disabled=true;resetMatchList('Aguardando lista de partidas...');
+  setOptions(competitionSelect,[],'Carregando competições...');
+  catalogStatus.textContent='Buscando competições e partidas disponíveis...';
+  try{
+    const response=await fetch(CATALOG_ENDPOINT+'?sport='+encodeURIComponent(sport),{headers:{'Accept':'application/json'}});
+    if(!response.ok)throw new Error('Catálogo indisponível');
+    const data=await response.json();
+    catalog=Array.isArray(data.competitions)?data.competitions:[];
+    setOptions(competitionSelect,catalog,'Selecione uma competição');
+    catalogStatus.textContent=catalog.length?'Catálogo atualizado. Escolha a competição e depois a partida.':'Nenhuma competição disponível para este esporte no momento.';
+  }catch(error){
+    catalog=[];
+    setOptions(competitionSelect,[],'Catálogo ainda não conectado');
+    resetMatchList('Partidas indisponíveis');
+    catalogStatus.textContent='O catálogo automático ainda não está conectado. Quando o backend de pesquisa estiver ativo, as opções aparecerão aqui automaticamente.';
+  }
+}
+function updateMatches(){
+  const selected=competitionSelect.value;
+  const competition=catalog.find(item=>String(item.id??item.name)===selected);
+  const matches=competition&&Array.isArray(competition.matches)?competition.matches:[];
+  setOptions(matchSelect,matches,matches.length?'Selecione uma partida':'Nenhuma partida disponível nesta competição');
+  if(competition&&matches.length===0)catalogStatus.textContent='A competição foi carregada, mas ainda não há partidas disponíveis nela.';
+}
+sportSelect.addEventListener('change',loadCatalog);
+competitionSelect.addEventListener('change',updateMatches);
+
 function load(){try{return JSON.parse(localStorage.getItem(STORE)||'[]')}catch{return []}}
 function save(){localStorage.setItem(STORE,JSON.stringify(entries));render()}
 function money(v){return Number(v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'})}
@@ -15,3 +50,4 @@ document.addEventListener('click',e=>{const go=e.target.closest('[data-go]');if(
 $('#entry-form').addEventListener('submit',e=>{e.preventDefault();const f=new FormData(e.currentTarget);const item=Object.fromEntries(f.entries());item.id=crypto.randomUUID?crypto.randomUUID():String(Date.now());item.odd=Number(item.odd);item.stake=Number(item.stake);if(!item.date)item.date=new Date().toISOString();entries.push(item);save();e.currentTarget.reset();showPage('history')});
 $('#simulate').addEventListener('click',()=>{const start=Number($('#progress-start').value),odd=Number($('#progress-odd').value),target=Number($('#progress-target').value),out=$('#progress-result');if(!(start>0&&odd>1&&target>start)){out.textContent='Confira os valores. O objetivo precisa ser maior que o valor inicial e a odd deve ser superior a 1.';return}let value=start,steps=0;while(value<target&&steps<100){value*=odd;steps++}out.innerHTML='Etapas necessárias: <strong>'+steps+'</strong><br>Valor projetado ao final: <strong>'+money(value)+'</strong><br>Valor inicial exposto: '+money(start)+'<br><span style="color:#91a2b9">Cálculo hipotético com green em todas as etapas.</span>'});
 render();
+loadCatalog();
