@@ -98,7 +98,8 @@ async function catalog(request) {
       if (!response.ok) return null;
       const data = await response.json();
       const matches = (data.events || []).filter(event => {
-        const kickoff = Date.parse(event.date || "");\n        return Number.isFinite(kickoff) && kickoff >= Date.now() && !event.status?.type?.completed;
+        const kickoff = Date.parse(event.date || "");
+        return Number.isFinite(kickoff) && kickoff >= Date.now() && !event.status?.type?.completed;
       }).map(event => {
         const competition = event.competitions?.[0] || {};
         const competitors = competition.competitors || [];
