@@ -18,7 +18,10 @@ function render(){renderWallet();cards();renderAlavancagens();const sorted=[...e
 function createAlavancagem(){const form=$('#alavancagem-form');form.hidden=!form.hidden;if(!form.hidden)form.querySelector('[name="name"]').focus()}
 $('#navigation').addEventListener('click',e=>{const b=e.target.closest('[data-page]');if(b)showPage(b.dataset.page)});
 $('#history-alav-filter').addEventListener('change',e=>{historyFilter=e.target.value;localStorage.setItem('gg-history-filter-v1',historyFilter);render()});
-$('#new-alavancagem').addEventListener('click',createAlavancagem);
+$('#new-alavancagem').addEventListener('click',()=>{$('#loose-entry-form').hidden=true;createAlavancagem()});
+$('#new-loose-entry').addEventListener('click',()=>{const form=$('#loose-entry-form');$('#alavancagem-form').hidden=true;form.hidden=!form.hidden;if(!form.hidden)form.querySelector('[name="sport"]').focus()});
+$('#cancel-loose-entry').addEventListener('click',()=>{$('#loose-entry-form').reset();$('#loose-entry-form').hidden=true});
+$('#loose-entry-form').addEventListener('submit',e=>{e.preventDefault();const f=new FormData(e.currentTarget),item=Object.fromEntries(f.entries());item.id=crypto.randomUUID?crypto.randomUUID():String(Date.now());item.odd=Number(item.odd);item.stake=Number(item.stake);item.createdAt=Date.now();item.date=new Date().toISOString();if(item.stake>walletBalance){alert('Saldo insuficiente na carteira. Adicione saldo antes de registrar esta entrada.');return}walletBalance=Number((walletBalance-item.stake).toFixed(2));entries.push(item);historyFilter='loose';localStorage.setItem('gg-history-filter-v1',historyFilter);persist();e.currentTarget.reset();e.currentTarget.hidden=true});
 $('#wallet-toggle').addEventListener('click',e=>{e.stopPropagation();const menu=$('#wallet-menu');menu.hidden=!menu.hidden});
 let walletDialogAction='add';
 function closeWalletDialog(){const input=$('#wallet-value');input.blur();$('#wallet-dialog').hidden=true;$('#wallet-form').reset();$('#wallet-dialog-error').textContent=''}

@@ -61,3 +61,13 @@
 .history-filter-wrap label{display:block;flex:0 0 auto;color:var(--muted);font-size:11px}
 .history-filter-wrap select{max-width:260px;font-weight:700;background:#142238;border-color:#31516d}
 @media(max-width:600px){.history-filter-wrap{width:100%;gap:8px}.history-filter-wrap select{flex:1;max-width:none}}
+
+
+/* Cadastro independente de entradas avulsas */
+.entry-create-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end}
+.entry-create-actions button{white-space:nowrap}
+.secondary-button{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:11px 16px;border:1px solid var(--border,#dbe2ea);border-radius:10px;background:var(--surface,#fff);color:var(--text,#172033);font:inherit;font-weight:700;cursor:pointer}
+.secondary-button:hover{border-color:var(--primary,#64748b);background:var(--surface-soft,#f8fafc)}
+.loose-entry-form{margin-bottom:18px}
+.loose-entry-form .muted{margin:0 0 16px}
+@media(max-width:640px){.entry-create-actions{width:100%;justify-content:stretch}.entry-create-actions button{flex:1;padding:10px 9px;font-size:13px}}

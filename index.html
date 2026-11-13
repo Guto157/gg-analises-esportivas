@@ -36,7 +36,20 @@
       </section>
       <section class="page" id="page-history"><div class="section-heading"><div><p class="eyebrow">REGISTROS</p><h2>Histórico de entradas</h2></div></div><div class="history-filter-wrap"><label for="history-alav-filter">Alavancagem</label><select id="history-alav-filter" aria-label="Selecionar alavancagem"><option value="">Todas as entradas</option></select></div><div class="panel"><div id="history-list" class="empty-state">Nenhuma entrada registrada ainda.</div></div></section>
       <section class="page" id="page-entries">
-        <div class="section-heading"><div><p class="eyebrow">BLOCOS PROGRESSIVOS</p><h2>Minhas alavancagens</h2><p class="muted">Cada alavancagem tem objetivo, entradas e histórico independentes.</p></div><button class="primary-button" id="new-alavancagem" type="button">+ Nova alavancagem</button></div>
+        <div class="section-heading"><div><p class="eyebrow">BLOCOS PROGRESSIVOS</p><h2>Minhas alavancagens</h2><p class="muted">Cada alavancagem tem objetivo, entradas e histórico independentes.</p></div><div class="entry-create-actions"><button class="secondary-button" id="new-loose-entry" type="button">+ Nova entrada avulsa</button><button class="primary-button" id="new-alavancagem" type="button">+ Nova alavancagem</button></div></div>
+        <form class="panel alav-create-form loose-entry-form" id="loose-entry-form" hidden>
+          <h3>Nova entrada avulsa</h3>
+          <p class="muted">Esta entrada ficará separada das alavancagens, mas será incluída no histórico geral, nas estatísticas e no controle da carteira.</p>
+          <div class="form-grid">
+            <label>Esporte<select name="sport" required><option>Futebol</option><option>Basquete</option></select></label>
+            <label>Competição<input name="competition" placeholder="Ex.: Champions League" required></label>
+            <label class="full">Partida<input name="match" placeholder="Time A x Time B" required></label>
+            <label class="full">Mercado<input name="market" placeholder="Ex.: Mais de 1.5 gols" required></label>
+            <label>Odd realizada<input name="odd" type="number" min="1.01" step="0.01" placeholder="1.85" required></label>
+            <label>Valor desta entrada (R$)<input name="stake" type="number" min="0.01" step="0.01" placeholder="Informe manualmente" required></label>
+          </div>
+          <div class="entry-actions"><button class="primary-button" type="submit">Registrar entrada avulsa</button><button class="delete-btn" id="cancel-loose-entry" type="button">Cancelar</button></div>
+        </form>
         <form class="panel alav-create-form" id="alavancagem-form" hidden>
           <h3>Criar alavancagem</h3>
           <div class="form-grid">
