@@ -1,4 +1,4 @@
-import { loadLocalAI, runLocalAgent, LOCAL_MODEL } from './local-ai.js';
+import { loadLocalAI, runLocalAgent, LOCAL_MODEL } from './local-ai.js?v=20261113-2';
 const $=s=>document.querySelector(s);const $$=s=>[...document.querySelectorAll(s)];const STORE='gg-analises-entries-v1';const PAGE_STORE='gg-analises-active-page-v1';let entries=load();
 
 const sportSelect=$('#sport'),competitionSelect=$('#competition'),matchSelect=$('#match'),catalogStatus=$('#catalog-status');
