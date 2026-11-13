@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#0b1220">
   <meta name="description" content="GG Análises Esportivas: centralize análises, entradas e estatísticas esportivas.">
   <title>GG Análises Esportivas</title>
-  <link rel="stylesheet" href="css/style.css?v=20261113-4">
+  <link rel="stylesheet" href="css/style.css?v=20261113-5">
 </head>
 <body>
   <div class="app-shell">
@@ -29,7 +29,7 @@
         <div class="stats-grid" id="overview-stats"></div>
         <div class="section-heading"><div><p class="eyebrow">ACOMPANHAMENTO</p><h2>Atividade recente</h2></div><button class="text-button" data-go="history">Ver histórico →</button></div>
         <div class="panel"><div id="recent-list" class="empty-state">Suas entradas registradas aparecerão aqui.</div></div>
-        <p class="notice"><strong>Transparência:</strong> a IA roda no aparelho, sem chave ou mensalidade. Na primeira utilização, o modelo é baixado e exige WebGPU. Os dados vêm de feeds públicos não oficiais da ESPN. Sem evidência ou odd verificável, a decisão é NÃO ENTRAR.</p>
+        <p class="notice"><strong>Transparência:</strong> a IA roda no aparelho, sem chave ou mensalidade. Na primeira utilização, o modelo é baixado e exige WebGPU. Os dados esportivos vêm da API SportScore. Odds só serão consideradas quando a fonte fornecer cotações verificáveis. Sem evidência ou odd verificável, a decisão é NÃO ENTRAR.</p>
       </section>
       <section class="page" id="page-analysis">
         <div class="section-heading"><div><p class="eyebrow">CENTRAL DE ANÁLISE</p><h2>Nova análise pré-jogo</h2><p class="muted">Selecione uma partida para direcionar a pesquisa dos especialistas.</p></div></div>
@@ -42,7 +42,7 @@
             <label class="full">Mercado (opcional)<input id="market" placeholder="Ex.: Mais de 2.5 gols"></label>
           </div>
           <button class="primary-button" id="analysis-button" disabled>Carregar IA local e analisar</button>
-          <p class="helper" id="catalog-status" role="status">Partidas futuras carregadas diretamente do feed público da ESPN. A análise usa IA local e pode exigir um primeiro download do modelo.</p>
+          <p class="helper" id="catalog-status" role="status">Partidas futuras consultadas na API SportScore. A análise usa IA local e pode exigir um primeiro download do modelo.</p>
         </div>
         <div class="agents-grid">
           <article class="agent-card"><span>01</span><h3>Histórico e dados</h3><p>Forma, confrontos e desempenho.</p></article>
@@ -80,9 +80,9 @@
           <p class="notice">Simulação matemática, não previsão. Uma sequência de reds pode causar a perda de todo o valor exposto. Não há garantia de atingir o objetivo.</p>
         </div>
       </section>
-      <footer>GG Análises Esportivas <span>•</span> Ferramenta de organização e estudo. Aposte com responsabilidade.</footer>
+      <footer>GG Análises Esportivas <span>•</span> Ferramenta de organização e estudo. Aposte com responsabilidade. <a href="https://sportscore.com/" rel="dofollow" target="_blank" title="Dados esportivos fornecidos por SportScore" style="color:#35d4dc">Powered by SportScore</a></footer>
     </main>
   </div>
-  <script type="module" src="js/app.js?v=20261113-4"></script>
+  <script type="module" src="js/app.js?v=20261113-5"></script>
 </body>
 </html>
