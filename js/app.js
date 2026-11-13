@@ -34,37 +34,70 @@ function setOptions(select,items,placeholder){
 }
 async function loadCatalog(){
   const sport=sportSelect.value;
-  competitionSelect.disabled=true;resetMatchList('Aguardando lista de partidas...');
+  competitionSelect.disabled=true;resetMatchList('Consultando partidas...');
   setOptions(competitionSelect,[],'Carregando competições...');
-  catalogStatus.textContent='Consultando calendário público da ESPN...';
-  const from=new Date(),to=new Date(from.getTime()+14*86400000),dates=espnDate(from)+'-'+espnDate(to);
+  catalogStatus.textContent='Consultando o calendário público da ESPN, dia por dia...';
+  const today=new Date();
+  const days=Array.from({length:15},(_,index)=>espnDate(new Date(today.getTime()+index*86400000)));
   const category=sport==='Basquete'?'basketball':'soccer';
   const leagues=ESPN_LEAGUES[sport]||ESPN_LEAGUES.Futebol;
-  const results=await Promise.allSettled(leagues.map(async league=>{
-    const url='https://site.api.espn.com/apis/site/v2/sports/'+category+'/'+encodeURIComponent(league.id)+'/scoreboard?limit=100&dates='+dates;
-    const response=await fetch(url,{headers:{Accept:'application/json'}});
-    if(!response.ok)throw new Error('ESPN '+response.status);
-    const data=await response.json();
-    const matches=(data.events||[]).filter(event=>{
+  const tasks=leagues.flatMap(league=>days.map(day=>({league,day})));
+  const responses=[];
+  let cursor=0;
+  const workers=Array.from({length:8},async()=>{
+    while(cursor<tasks.length){
+      const task=tasks[cursor++];
+      const url='https://site.api.espn.com/apis/site/v2/sports/'+category+'/'+encodeURIComponent(task.league.id)+'/scoreboard?limit=100&dates='+task.day;
+      try{
+        const response=await fetch(url,{headers:{Accept:'application/json'}});
+        if(!response.ok)throw new Error('ESPN '+response.status);
+        const data=await response.json();
+        responses.push({league:task.league,events:data.events||[],ok:true});
+      }catch(error){
+        responses.push({league:task.league,events:[],ok:false,error:String(error?.message||error)});
+      }
+    }
+  });
+  await Promise.all(workers);
+  catalog=leagues.map(league=>{
+    const leagueResponses=responses.filter(item=>item.league.id===league.id);
+    const events=new Map();
+    leagueResponses.filter(item=>item.ok).forEach(item=>item.events.forEach(event=>{
       const kickoff=Date.parse(event.date||'');
-      return Number.isFinite(kickoff)&&kickoff>=Date.now()&&!event.status?.type?.completed;
-    }).map(event=>{
+      if(!Number.isFinite(kickoff)||kickoff<Date.now()||event.status?.type?.completed)return;
       const competition=event.competitions?.[0]||{},teams=competition.competitors||[];
       const home=teams.find(team=>team.homeAway==='home')||teams[0];
       const away=teams.find(team=>team.homeAway==='away')||teams[1];
       const homeName=home?.team?.displayName||home?.team?.name;
       const awayName=away?.team?.displayName||away?.team?.name;
-      if(!homeName||!awayName)return null;
-      return{id:String(event.id),name:homeName+' x '+awayName,date:event.date||null,status:event.status?.type?.description||'Agendada'};
-    }).filter(Boolean);
-    return matches.length?{id:league.id,name:league.name,matches}:null;
-  }));
-  catalog=results.filter(result=>result.status==='fulfilled'&&result.value).map(result=>result.value);
+      if(!homeName||!awayName)return;
+      events.set(String(event.id),{
+        id:String(event.id),
+        name:homeName+' x '+awayName,
+        date:event.date||null,
+        status:event.status?.type?.description||'Agendada'
+      });
+    }));
+    return{
+      id:league.id,
+      name:league.name,
+      matches:[...events.values()].sort((a,b)=>Date.parse(a.date)-Date.parse(b.date)),
+      successfulDays:leagueResponses.filter(item=>item.ok).length,
+      failedDays:leagueResponses.filter(item=>!item.ok).length
+    };
+  });
   setOptions(competitionSelect,catalog,'Selecione uma competição');
-  catalogStatus.textContent=catalog.length
-    ?'Feed público atualizado. Selecione competição e partida. Fonte: ESPN.'
-    :'A ESPN não retornou partidas futuras para estas competições nos próximos 14 dias. Tente novamente mais tarde.';
+  const totalMatches=catalog.reduce((sum,league)=>sum+league.matches.length,0);
+  const successfulRequests=responses.filter(item=>item.ok).length;
+  if(totalMatches){
+    catalogStatus.textContent=totalMatches+' partidas encontradas em '+catalog.filter(item=>item.matches.length).length+' competições. Calendário consultado dia por dia. Fonte: ESPN.';
+  }else if(successfulRequests===0){
+    catalogStatus.textContent='Não foi possível consultar o calendário da ESPN agora. A fonte não respondeu às consultas. Tente novamente mais tarde.';
+  }else{
+    catalogStatus.textContent='A ESPN respondeu, mas não listou partidas futuras nestas competições nos próximos 14 dias. Você ainda pode selecionar uma competição para conferir a disponibilidade.';
+  }
 }
+
 function updateMatches(){
   const competition=catalog.find(item=>String(item.id)===competitionSelect.value);
   const matches=competition?.matches||[];
