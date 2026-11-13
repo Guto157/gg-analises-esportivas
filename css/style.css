@@ -24,3 +24,14 @@
 /* Formulário próprio da carteira, evitando prompt nativo no celular */
 .wallet-dialog{position:fixed;inset:0;z-index:100;display:grid;place-items:center;padding:18px;background:#020711c9;backdrop-filter:blur(5px)}.wallet-dialog[hidden]{display:none}.wallet-dialog-card{position:relative;width:min(100%,360px);padding:25px;background:#101d30;border:1px solid #31516d;border-radius:16px;box-shadow:0 20px 60px #0009}.wallet-dialog-card h2{margin:0 0 20px;font:700 21px 'Space Grotesk'}.wallet-dialog-card label{margin-bottom:8px}.wallet-dialog-card input{font-size:16px;padding:14px}.wallet-dialog-close{position:absolute;right:13px;top:10px;border:0;background:transparent;color:#9fb0c5;font-size:27px;cursor:pointer}.wallet-dialog-error{min-height:17px;color:var(--red);font-size:11px;margin:7px 0 10px}.wallet-dialog-card .primary-button{width:100%}
 @media(max-width:600px){.wallet-dialog{align-items:center;padding:16px}.wallet-dialog-card{padding:23px 19px}}
+
+
+/* Identidade visual dos resultados selecionados e botão compacto de exclusão */
+.result-pill.status-green{color:#8df2c4;background:#123c30;border-color:#247b5a}
+.result-pill.status-red{color:#ff9aaa;background:#451e2a;border-color:#9c3c50}
+.result-pill.status-void{color:#ffe08a;background:#463817;border-color:#92722b}
+.result-pill.status-cashout{color:#a8dcff;background:#15364d;border-color:#347da8}
+.result-btn.cashout{color:#8fd2ff}
+.delete-btn.icon-delete{width:32px;height:32px;padding:7px;display:grid;place-items:center;color:#a7b5c8;background:transparent;border:1px solid #33465f;border-radius:7px}
+.delete-btn.icon-delete svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.delete-btn.icon-delete:hover{color:#ff8294;background:#3b1e2a;border-color:#8c3c50}
