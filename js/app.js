@@ -188,9 +188,16 @@ analysisButton.addEventListener('click',async()=>{
     }
     analysisButton.textContent='IA chefe: confrontando os cinco relatórios...';
     analysisPanel.textContent='Os cinco especialistas terminaram. A IA chefe está verificando divergências e consolidando a decisão.';
-    const chief=await runLocalAgent(engine,
+    let chief=await runLocalAgent(engine,
       'Você é a IA chefe do GG Análises Esportivas. Você só recebe os cinco relatórios depois que eles terminam. Seja crítico. Nunca invente odds ou estatísticas. Uma recomendação exige probabilidade fundamentada e odd verificável. Na ausência disso, decida NÃO ENTRAR.',
       'Partida: '+base+'\nRelatórios independentes: '+JSON.stringify(reports.map(item=>({name:item.name,report:item.report}))).slice(0,11500)+'\n\nConfronte concordâncias e divergências. Apresente resumo, pontos de concordância, divergências, oportunidades sustentadas (no máximo três), riscos e decisão final. Não force entradas. Sem odd verificável, NÃO ENTRAR.');
+    const rawOdds=evidence.summary?.odds;
+    const hasOdds=Array.isArray(rawOdds)?rawOdds.length>0:Boolean(rawOdds&&typeof rawOdds==='object'&&Object.keys(rawOdds).length);
+    const hasMatchStats=Boolean(evidence.summary?.boxscore||evidence.summary?.predictor);
+    if(!hasOdds||!hasMatchStats){
+      const missing=[!hasMatchStats?'estatísticas específicas suficientes da partida':null,!hasOdds?'odds verificáveis de uma fonte identificada':null].filter(Boolean).join(' e ');
+      chief+='\\n\\nTRAVA DE SEGURANÇA DO SISTEMA: NÃO ENTRAR. A fonte consultada não forneceu '+missing+'. Nenhuma oportunidade pode ser apresentada como aposta de valor sem esses dados.';
+    }
     renderAnalysis({agents:reports,chief,completedAt:new Date().toISOString()});
   }catch(error){
     analysisPanel.innerHTML='<h2>Não foi possível executar a análise local</h2><p>'+escapeHtml(error.message)+'</p><p class="helper">O modelo depende de WebGPU e de memória disponível. Se o aparelho não for compatível, tente em um computador com Chrome ou Edge atualizado.</p>';
