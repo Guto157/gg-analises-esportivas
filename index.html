@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#0b1220">
   <meta name="description" content="GG Alavancagem: centralize análises, entradas e estatísticas esportivas.">
   <title>GG Alavancagem</title>
-  <link rel="stylesheet" href="css/style.css?v=20261113-8">
+  <link rel="stylesheet" href="css/style.css?v=20261113-9">
 </head>
 <body>
   <div class="app-shell">
@@ -17,7 +17,6 @@
         <button class="nav-link" data-page="history"><span>▤</span> Histórico</button>
         <button class="nav-link" data-page="entries"><span>＋</span> Minhas entradas</button>
         <button class="nav-link" data-page="stats"><span>▥</span> Estatísticas</button>
-        <button class="nav-link" data-page="progress"><span>↗</span> Progressão</button>
       </nav>
       <div class="sidebar-bottom"><span class="status-dot"></span> Painel em desenvolvimento</div>
     </aside>
@@ -46,18 +45,9 @@
         <p class="helper">O valor de cada entrada é informado manualmente. Green atualiza o saldo; Red encerra o bloco; ao atingir o objetivo, a alavancagem é finalizada e seu histórico permanece salvo.</p>
       </section>
       <section class="page" id="page-stats"><div class="section-heading"><div><p class="eyebrow">DESEMPENHO</p><h2>Estatísticas</h2></div></div><div class="stats-grid" id="full-stats"></div><div class="panel"><h3>Resultados registrados</h3><div id="result-breakdown" class="result-breakdown"></div></div></section>
-      <section class="page" id="page-progress">
-        <div class="section-heading"><div><p class="eyebrow">SIMULADOR</p><h2>Progressão de banca</h2><p class="muted">Simule o reinvestimento integral do retorno em uma sequência hipotética de greens.</p></div></div>
-        <div class="panel">
-          <div class="form-grid"><label>Valor inicial (R$)<input id="progress-start" type="number" min="0.01" step="0.01" value="10"></label><label>Odd por etapa<input id="progress-odd" type="number" min="1.01" step="0.01" value="1.80"></label><label>Objetivo (R$)<input id="progress-target" type="number" min="0.01" step="0.01" value="1000"></label></div>
-          <button class="primary-button" id="simulate">Simular progressão</button>
-          <div id="progress-result" class="progress-result">Informe os valores e inicie a simulação.</div>
-          <p class="notice">Simulação matemática, não previsão. Uma sequência de reds pode causar a perda de todo o valor exposto. Não há garantia de atingir o objetivo.</p>
-        </div>
-      </section>
       <footer>GG Alavancagem <span>•</span> Ferramenta de controle e acompanhamento. Aposte com responsabilidade.</footer>
     </main>
   </div>
-  <script type="module" src="js/app.js?v=20261113-8"></script>
+  <script type="module" src="js/app.js?v=20261113-9"></script>
 </body>
 </html>
