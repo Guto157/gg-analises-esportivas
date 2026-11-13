@@ -1,6 +1,8 @@
 import { CreateMLCEngine } from "https://esm.run/@mlc-ai/web-llm@0.2.88";
 
-const MODEL_ID = "Qwen2.5-1.5B-Instruct-q4f16_1-MLC";
+const LARGE_MODEL = "Qwen2.5-1.5B-Instruct-q4f16_1-MLC";
+const SMALL_MODEL = "Qwen2.5-0.5B-Instruct-q4f16_1-MLC";
+export let LOCAL_MODEL = Number(navigator.deviceMemory || 8) <= 4 ? SMALL_MODEL : LARGE_MODEL;
 let enginePromise = null;
 
 export async function loadLocalAI(onProgress = () => {}) {
@@ -14,9 +16,20 @@ export async function loadLocalAI(onProgress = () => {}) {
   }
 
   if (!enginePromise) {
-    enginePromise = CreateMLCEngine(MODEL_ID, {
-      initProgressCallback: report => onProgress(report)
-    }).catch(error => {
+    enginePromise = (async () => {
+      try {
+        return await CreateMLCEngine(LOCAL_MODEL, {
+          initProgressCallback: report => onProgress(report)
+        });
+      } catch (primaryError) {
+        if (LOCAL_MODEL === SMALL_MODEL) throw primaryError;
+        LOCAL_MODEL = SMALL_MODEL;
+        onProgress({ text: "O aparelho não suportou o modelo maior. Tentando modelo compacto..." });
+        return CreateMLCEngine(LOCAL_MODEL, {
+          initProgressCallback: report => onProgress(report)
+        });
+      }
+    })().catch(error => {
       enginePromise = null;
       throw error;
     });
@@ -40,4 +53,3 @@ export async function runLocalAgent(engine, system, prompt) {
   return text;
 }
 
-export const LOCAL_MODEL = MODEL_ID;
