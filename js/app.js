@@ -22,12 +22,12 @@ function teamLabel(value){
   return pick(value,['name','display_name','displayName','short_name','shortName','title'])||'';
 }
 function normalizeFixture(raw,sport){
-  const home=teamLabel(pick(raw,['home_team','home','homeTeam'])||raw?.teams?.home||raw?.participants?.[0]);
-  const away=teamLabel(pick(raw,['away_team','away','awayTeam'])||raw?.teams?.away||raw?.participants?.[1]);
-  const date=pick(raw,['kickoff','date','datetime','start_time','startTime','time','match_time']);
+  const home=teamLabel(pick(raw,['home_team','home','homeTeam','home_name','homeTeamName'])||raw?.teams?.home||raw?.participants?.[0]);
+  const away=teamLabel(pick(raw,['away_team','away','awayTeam','away_name','awayTeamName'])||raw?.teams?.away||raw?.participants?.[1]);
+  const date=pick(raw,['kickoff','start_time','startTime','datetime','match_time','time','date']);
   const id=pick(raw,['slug','fixture_slug','match_slug','id','fixture_id','event_id']);
   if(!home||!away||!date||!id)return null;
-  const competitionRaw=pick(raw,['competition','league','tournament'])||{};
+  const competitionRaw=pick(raw,['competition','league','tournament','competition_name','league_name'])||{};
   const competitionName=typeof competitionRaw==='string'?competitionRaw:teamLabel(competitionRaw);
   const competitionSlug=typeof competitionRaw==='object'?pick(competitionRaw,['slug','id','code']):null;
   return{
@@ -43,11 +43,13 @@ function normalizeFixture(raw,sport){
   };
 }
 async function fetchSportScoreDay(sport,date){
-  const url=SPORT_SCORE+'/fixtures/?sport='+encodeURIComponent(SPORT_LABELS[sport])+'&date='+encodeURIComponent(date)+'&status=upcoming&limit=200';
+  // A API documenta status como filtro opcional. Consultamos o dia sem esse filtro
+  // para não depender de uma classificação de status inconsistente no provedor.
+  const url=SPORT_SCORE+'/fixtures/?sport='+encodeURIComponent(SPORT_LABELS[sport])+'&date='+encodeURIComponent(date)+'&limit=200';
   const response=await fetch(url,{headers:{Accept:'application/json'}});
   if(!response.ok)throw new Error('SportScore '+response.status);
   const data=await response.json();
-  const list=Array.isArray(data)?data:(data.fixtures||data.matches||data.events||data.data?.fixtures||data.data?.matches||data.data||[]);
+  const list=Array.isArray(data)?data:(data.fixtures||data.matches||data.events||data.results||data.items||data.data?.fixtures||data.data?.matches||data.data?.events||data.data?.results||data.data||[]);
   if(!Array.isArray(list))throw new Error('Formato de calendário não reconhecido');
   return{url,list};
 }
