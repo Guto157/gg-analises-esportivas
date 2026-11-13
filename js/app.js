@@ -106,22 +106,96 @@ sportSelect.addEventListener('change',()=>{analysisButton.disabled=true;analysis
 competitionSelect.addEventListener('change',syncAnalysisButton);
 matchSelect.addEventListener('change',syncAnalysisButton);
 
-async function fetchMatchEvidence(sport,leagueId,eventId){
+function summarizeRecentMatches(schedule,teamId,cutoff){
+  return (schedule?.events||[])
+    .filter(event=>{
+      const date=Date.parse(event.date||'');
+      return Number.isFinite(date)&&date<cutoff&&(event.status?.type?.completed===true||event.status?.type?.state==='post');
+    })
+    .sort((a,b)=>Date.parse(b.date)-Date.parse(a.date))
+    .slice(0,8)
+    .map(event=>{
+      const competition=event.competitions?.[0]||{};
+      const competitors=competition.competitors||[];
+      const team=competitors.find(item=>String(item.id||item.team?.id)===String(teamId));
+      const opponent=competitors.find(item=>item!==team);
+      if(!team||!opponent)return null;
+      const scored=Number(team.score),conceded=Number(opponent.score);
+      const result=team.winner===true?'V':team.winner===false?'D':
+        Number.isFinite(scored)&&Number.isFinite(conceded)?(scored>conceded?'V':scored<conceded?'D':'E'):'N/D';
+      return{
+        date:event.date,
+        opponent:opponent.team?.displayName||opponent.team?.name||'Adversário não identificado',
+        venue:team.homeAway==='home'?'Casa':'Fora',
+        score:String(team.score??'N/D')+' x '+String(opponent.score??'N/D'),
+        result
+      };
+    }).filter(Boolean);
+}
+
+async function fetchMatchEvidence(sport,leagueId,eventId,matchDate){
   const category=sport==='Basquete'?'basketball':'soccer';
-  const summaryUrl='https://site.api.espn.com/apis/site/v2/sports/'+category+'/'+encodeURIComponent(leagueId)+'/summary?event='+encodeURIComponent(eventId);
-  const newsUrl='https://site.api.espn.com/apis/site/v2/sports/'+category+'/'+encodeURIComponent(leagueId)+'/news?limit=8';
+  const baseUrl='https://site.api.espn.com/apis/site/v2/sports/'+category+'/'+encodeURIComponent(leagueId);
+  const summaryUrl=baseUrl+'/summary?event='+encodeURIComponent(eventId);
+  const newsUrl=baseUrl+'/news?limit=8';
   const [summaryResult,newsResult]=await Promise.allSettled([
     fetch(summaryUrl).then(r=>{if(!r.ok)throw new Error('Resumo ESPN '+r.status);return r.json()}),
     fetch(newsUrl).then(r=>{if(!r.ok)throw new Error('Notícias ESPN '+r.status);return r.json()})
   ]);
   const summary=summaryResult.status==='fulfilled'?summaryResult.value:null;
   const news=newsResult.status==='fulfilled'?newsResult.value:null;
+  const competitors=summary?.header?.competitions?.[0]?.competitors||[];
+  const cutoff=Date.parse(matchDate||'')||Date.now();
+  const teamRefs=competitors.map(item=>({
+    id:item.id||item.team?.id,
+    name:item.team?.displayName||item.team?.name||'Equipe',
+    homeAway:item.homeAway
+  })).filter(item=>item.id);
+  const scheduleResults=await Promise.allSettled(teamRefs.map(async team=>{
+    const url=baseUrl+'/teams/'+encodeURIComponent(team.id)+'/schedule';
+    const response=await fetch(url);
+    if(!response.ok)throw new Error('Calendário da equipe '+response.status);
+    return{team,url,data:await response.json()};
+  }));
+  const teams=scheduleResults.map((result,index)=>{
+    const ref=teamRefs[index];
+    const data=result.status==='fulfilled'?result.value.data:null;
+    return{
+      id:ref.id,
+      name:ref.name,
+      homeAway:ref.homeAway,
+      recentMatches:summarizeRecentMatches(data,ref.id,cutoff),
+      scheduleAvailable:Boolean(data)
+    };
+  });
+  const home=teams.find(team=>team.homeAway==='home')||teams[0]||null;
+  const away=teams.find(team=>team.homeAway==='away')||teams[1]||null;
+  const homeSchedule=scheduleResults[teamRefs.findIndex(team=>team.id===home?.id)];
+  const awaySchedule=scheduleResults[teamRefs.findIndex(team=>team.id===away?.id)];
+  const homeIds=new Set((homeSchedule?.status==='fulfilled'?(homeSchedule.value.data?.events||[]):[]).map(event=>String(event.id)));
+  const h2h=(awaySchedule?.status==='fulfilled'?(awaySchedule.value.data?.events||[]):[])
+    .filter(event=>homeIds.has(String(event.id))&&Date.parse(event.date||'')<cutoff)
+    .sort((a,b)=>Date.parse(b.date)-Date.parse(a.date))
+    .slice(0,10)
+    .map(event=>{
+      const comp=event.competitions?.[0]||{};
+      return{
+        date:event.date,
+        match:event.name||event.shortName||'Confronto direto',
+        score:(comp.competitors||[]).map(team=>(team.team?.displayName||team.team?.name||'Equipe')+' '+String(team.score??'N/D')).join(' x ')
+      };
+    });
   const articles=(news?.articles||[]).slice(0,8).map(article=>({
     headline:article.headline||article.title||'',
     description:article.description||article.summary||'',
     published:article.published||article.lastModified||null,
     url:article.links?.web?.href||article.links?.api?.news?.href||''
   }));
+  const sources=[
+    {title:'ESPN: resumo e dados da partida',url:summaryUrl},
+    {title:'ESPN: notícias da competição',url:newsUrl},
+    ...scheduleResults.map(result=>result.status==='fulfilled'?{title:'ESPN: calendário de '+result.value.team.name,url:result.value.url}:null).filter(Boolean)
+  ];
   return{
     summary:summary?{
       header:summary.header||null,
@@ -132,13 +206,26 @@ async function fetchMatchEvidence(sport,leagueId,eventId){
       predictor:summary.predictor||null,
       leaders:summary.leaders||null
     }:null,
+    teams,
+    h2h,
     news:articles,
-    sources:[
-      {title:'ESPN: resumo e dados da partida',url:summaryUrl},
-      {title:'ESPN: notícias da competição',url:newsUrl}
-    ],
+    sources,
+    retrievalErrors:[
+      summaryResult.status==='rejected'?'Resumo da partida indisponível':null,
+      newsResult.status==='rejected'?'Notícias da competição indisponíveis':null,
+      ...scheduleResults.map((result,index)=>result.status==='rejected'?'Calendário indisponível para '+teamRefs[index].name:null)
+    ].filter(Boolean),
     retrievedAt:new Date().toISOString()
   };
+}
+
+function evidenceForAgent(agentId,evidence){
+  const match={header:evidence.summary?.header,retrievedAt:evidence.retrievedAt};
+  if(agentId==='historico')return{match,teams:evidence.teams,h2h:evidence.h2h,standings:evidence.summary?.standings};
+  if(agentId==='probabilidades')return{match,teams:evidence.teams,h2h:evidence.h2h,boxscore:evidence.summary?.boxscore,predictor:evidence.summary?.predictor};
+  if(agentId==='mercados')return{match,teams:evidence.teams,boxscore:evidence.summary?.boxscore,leaders:evidence.summary?.leaders,predictor:evidence.summary?.predictor};
+  if(agentId==='odds')return{match,odds:evidence.summary?.odds,retrievedAt:evidence.retrievedAt};
+  return{match,injuries:evidence.summary?.injuries,news:evidence.news};
 }
 
 function renderAnalysis(data){
@@ -173,8 +260,8 @@ analysisButton.addEventListener('click',async()=>{
       if(report?.text)analysisPanel.textContent='Preparando IA local: '+report.text;
     });
     analysisButton.textContent='Consultando dados reais...';
-    const evidence=await fetchMatchEvidence(sportSelect.value,competition.id,match.id);
-    const evidenceText=JSON.stringify(evidence).slice(0,10500);
+    const evidence=await fetchMatchEvidence(sportSelect.value,competition.id,match.id,match.date);
+    
     const base='Esporte: '+sportSelect.value+'\nCompetição: '+competition.name+'\nPartida: '+match.name+'\nInício: '+fmtDate(match.date)+'\n';
     const reports=[];
     for(let index=0;index<AGENT_TASKS.length;index++){
@@ -183,7 +270,7 @@ analysisButton.addEventListener('click',async()=>{
       analysisPanel.textContent='Executando '+agent.name+'. Cada especialista recebe os mesmos dados e trabalha sem ler os relatórios dos demais.';
       const report=await runLocalAgent(engine,
         'Você é '+agent.name+', especialista independente do GG Análises Esportivas. Seja rigoroso, escreva em português brasileiro. Nunca invente resultados, estatísticas, notícias, escalações, probabilidades ou odds. Se os dados forem insuficientes, diga isso claramente. Não dê garantia de acerto.',
-        agent.task+'\n\n'+base+'\nDados públicos obtidos agora: '+evidenceText+'\n\nResponda com: evidências encontradas, análise, limitações e conclusão.');
+        agent.task+'\n\n'+base+'\nDados específicos coletados para sua função: '+JSON.stringify(evidenceForAgent(agent.id,evidence)).slice(0,8500)+'\n\nResponda com: evidências encontradas, análise, limitações e conclusão. Se não houver dados suficientes, declare isso sem preencher lacunas com suposições.');
       reports.push({id:agent.id,name:agent.name,report,sources:evidence.sources});
     }
     analysisButton.textContent='IA chefe: confrontando os cinco relatórios...';
