@@ -196,7 +196,7 @@ analysisButton.addEventListener('click',async()=>{
     const hasMatchStats=Boolean(evidence.summary?.boxscore||evidence.summary?.predictor);
     if(!hasOdds||!hasMatchStats){
       const missing=[!hasMatchStats?'estatísticas específicas suficientes da partida':null,!hasOdds?'odds verificáveis de uma fonte identificada':null].filter(Boolean).join(' e ');
-      chief+='\\n\\nTRAVA DE SEGURANÇA DO SISTEMA: NÃO ENTRAR. A fonte consultada não forneceu '+missing+'. Nenhuma oportunidade pode ser apresentada como aposta de valor sem esses dados.';
+      chief+=String.fromCharCode(10,10)+'TRAVA DE SEGURANÇA DO SISTEMA: NÃO ENTRAR. A fonte consultada não forneceu '+missing+'. Nenhuma oportunidade pode ser apresentada como aposta de valor sem esses dados.';
     }
     renderAnalysis({agents:reports,chief,completedAt:new Date().toISOString()});
   }catch(error){
