@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0b1220">
+  <meta name="description" content="GG Análises Esportivas: centralize análises, entradas e estatísticas esportivas.">
+  <title>GG Análises Esportivas</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <a class="brand" href="#" aria-label="GG Análises Esportivas início"><span class="brand-mark">GG</span><span><strong>GG Análises</strong><small>ESPORTIVAS</small></span></a>
+      <nav id="navigation" class="navigation" aria-label="Navegação principal">
+        <button class="nav-link active" data-page="overview"><span>⌂</span> Visão geral</button>
+        <button class="nav-link" data-page="analysis"><span>⌕</span> Analisar partida</button>
+        <button class="nav-link" data-page="history"><span>▤</span> Histórico</button>
+        <button class="nav-link" data-page="entries"><span>＋</span> Minhas entradas</button>
+        <button class="nav-link" data-page="stats"><span>▥</span> Estatísticas</button>
+        <button class="nav-link" data-page="progress"><span>↗</span> Progressão</button>
+      </nav>
+      <div class="sidebar-bottom"><span class="status-dot"></span> Painel em desenvolvimento</div>
+    </aside>
+    <main class="main-content">
+      <header class="topbar"><div><p class="eyebrow">CENTRAL DE DESEMPENHO</p><h1 id="page-title">Visão geral</h1></div><div class="topbar-tag">GG <span>•</span> ESPORTIVAS</div></header>
+      <section class="page active" id="page-overview">
+        <div class="welcome-card"><div><p class="eyebrow">BEM-VINDO AO GG</p><h2>Decisões baseadas em dados.</h2><p>Organize suas análises, registre suas entradas e acompanhe seus resultados em um só lugar.</p></div><div class="welcome-symbol">GG</div></div>
+        <div class="stats-grid" id="overview-stats"></div>
+        <div class="section-heading"><div><p class="eyebrow">ACOMPANHAMENTO</p><h2>Atividade recente</h2></div><button class="text-button" data-go="history">Ver histórico →</button></div>
+        <div class="panel"><div id="recent-list" class="empty-state">Suas entradas registradas aparecerão aqui.</div></div>
+        <p class="notice"><strong>Importante:</strong> as análises automatizadas ainda não estão conectadas. Nenhuma odd ou recomendação fictícia será exibida como dado real.</p>
+      </section>
+      <section class="page" id="page-analysis">
+        <div class="section-heading"><div><p class="eyebrow">CENTRAL DE ANÁLISE</p><h2>Nova análise pré-jogo</h2><p class="muted">Selecione uma partida para direcionar a pesquisa dos especialistas.</p></div></div>
+        <div class="panel">
+          <div class="form-grid">
+            <label>Esporte<select id="sport"><option value="Futebol">Futebol</option><option value="Basquete">Basquete</option></select></label>
+            <label>Competição<input id="competition" placeholder="Ex.: Brasileirão, NBA"></label>
+            <label class="full">Partida<input id="match" placeholder="Ex.: Flamengo x Palmeiras"></label>
+            <label class="full">Tipo de análise<select id="analysis-type"><option>Análise completa</option><option>Mercado específico</option></select></label>
+            <label class="full">Mercado (opcional)<input id="market" placeholder="Ex.: Mais de 2.5 gols"></label>
+          </div>
+          <button class="primary-button" id="analysis-button" disabled>Motor de análise ainda não conectado</button>
+          <p class="helper">A interface está preparada. Para ativar os seis agentes, será necessário configurar um backend seguro e fontes de pesquisa/odds.</p>
+        </div>
+        <div class="agents-grid">
+          <article class="agent-card"><span>01</span><h3>Histórico e dados</h3><p>Forma, confrontos e desempenho.</p></article>
+          <article class="agent-card"><span>02</span><h3>Probabilidades</h3><p>Estimativas fundamentadas em dados.</p></article>
+          <article class="agent-card"><span>03</span><h3>Mercados</h3><p>Oportunidades por tipo de mercado.</p></article>
+          <article class="agent-card"><span>04</span><h3>Odds e valor</h3><p>Odds reais, odd justa e valor esperado.</p></article>
+          <article class="agent-card"><span>05</span><h3>Escalações e notícias</h3><p>Desfalques, titulares e notícias recentes.</p></article>
+          <article class="agent-card chief"><span>06</span><h3>IA chefe</h3><p>Confronta os relatórios e consolida a decisão.</p></article>
+        </div>
+      </section>
+      <section class="page" id="page-history"><div class="section-heading"><div><p class="eyebrow">REGISTROS</p><h2>Histórico de entradas</h2></div></div><div class="panel"><div id="history-list" class="empty-state">Nenhuma entrada registrada ainda.</div></div></section>
+      <section class="page" id="page-entries">
+        <div class="section-heading"><div><p class="eyebrow">REGISTRO MANUAL</p><h2>Adicionar entrada</h2><p class="muted">Registre também apostas feitas fora das análises do GG.</p></div></div>
+        <form class="panel" id="entry-form">
+          <div class="form-grid">
+            <label>Esporte<select name="sport" required><option>Futebol</option><option>Basquete</option></select></label>
+            <label>Competição<input name="competition" placeholder="Ex.: Champions League" required></label>
+            <label class="full">Partida<input name="match" placeholder="Time A x Time B" required></label>
+            <label class="full">Mercado<input name="market" placeholder="Ex.: Mais de 1.5 gols" required></label>
+            <label>Odd realizada<input name="odd" type="number" min="1.01" step="0.01" placeholder="1.85" required></label>
+            <label>Valor apostado (R$)<input name="stake" type="number" min="0.01" step="0.01" placeholder="20,00" required></label>
+            <label class="full">Data e hora<input name="date" type="datetime-local" required></label>
+          </div>
+          <button class="primary-button" type="submit">Salvar entrada</button>
+          <p class="helper">Os registros ficam salvos neste navegador. Ainda não há sincronização entre aparelhos.</p>
+        </form>
+      </section>
+      <section class="page" id="page-stats"><div class="section-heading"><div><p class="eyebrow">DESEMPENHO</p><h2>Estatísticas</h2></div></div><div class="stats-grid" id="full-stats"></div><div class="panel"><h3>Resultados registrados</h3><div id="result-breakdown" class="result-breakdown"></div></div></section>
+      <section class="page" id="page-progress">
+        <div class="section-heading"><div><p class="eyebrow">SIMULADOR</p><h2>Progressão de banca</h2><p class="muted">Simule o reinvestimento integral do retorno em uma sequência hipotética de greens.</p></div></div>
+        <div class="panel">
+          <div class="form-grid"><label>Valor inicial (R$)<input id="progress-start" type="number" min="0.01" step="0.01" value="10"></label><label>Odd por etapa<input id="progress-odd" type="number" min="1.01" step="0.01" value="1.80"></label><label>Objetivo (R$)<input id="progress-target" type="number" min="0.01" step="0.01" value="1000"></label></div>
+          <button class="primary-button" id="simulate">Simular progressão</button>
+          <div id="progress-result" class="progress-result">Informe os valores e inicie a simulação.</div>
+          <p class="notice">Simulação matemática, não previsão. Uma sequência de reds pode causar a perda de todo o valor exposto. Não há garantia de atingir o objetivo.</p>
+        </div>
+      </section>
+      <footer>GG Análises Esportivas <span>•</span> Ferramenta de organização e estudo. Aposte com responsabilidade.</footer>
+    </main>
+  </div>
+  <script src="js/app.js"></script>
+</body>
+</html>
