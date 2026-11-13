@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#0b1220">
   <meta name="description" content="GG Alavancagem: centralize análises, entradas e estatísticas esportivas.">
   <title>GG Alavancagem</title>
-  <link rel="stylesheet" href="css/style.css?v=20261113-6">
+  <link rel="stylesheet" href="css/style.css?v=20261113-8">
 </head>
 <body>
   <div class="app-shell">
@@ -32,20 +32,18 @@
       </section>
       <section class="page" id="page-history"><div class="section-heading"><div><p class="eyebrow">REGISTROS</p><h2>Histórico de entradas</h2></div></div><div class="panel"><div id="history-list" class="empty-state">Nenhuma entrada registrada ainda.</div></div></section>
       <section class="page" id="page-entries">
-        <div class="section-heading"><div><p class="eyebrow">REGISTRO MANUAL</p><h2>Adicionar entrada</h2><p class="muted">Registre suas entradas realizadas.</p></div></div>
-        <form class="panel" id="entry-form">
+        <div class="section-heading"><div><p class="eyebrow">BLOCOS PROGRESSIVOS</p><h2>Minhas alavancagens</h2><p class="muted">Cada alavancagem tem objetivo, entradas e histórico independentes.</p></div><button class="primary-button" id="new-alavancagem" type="button">+ Nova alavancagem</button></div>
+        <form class="panel alav-create-form" id="alavancagem-form" hidden>
+          <h3>Criar alavancagem</h3>
           <div class="form-grid">
-            <label>Esporte<select name="sport" required><option>Futebol</option><option>Basquete</option></select></label>
-            <label>Competição<input name="competition" placeholder="Ex.: Champions League" required></label>
-            <label class="full">Partida<input name="match" placeholder="Time A x Time B" required></label>
-            <label class="full">Mercado<input name="market" placeholder="Ex.: Mais de 1.5 gols" required></label>
-            <label>Odd realizada<input name="odd" type="number" min="1.01" step="0.01" placeholder="1.85" required></label>
-            <label>Valor apostado (R$)<input name="stake" type="number" min="0.01" step="0.01" placeholder="20,00" required></label>
-            <label class="full">Data e hora<input name="date" type="datetime-local" required></label>
+            <label class="full">Nome da alavancagem<input name="name" placeholder="Ex.: Alavancagem 1" required maxlength="60"></label>
+            <label>Valor inicial (R$)<input name="initial" type="number" min="0.01" step="0.01" placeholder="20,00" required></label>
+            <label>Objetivo final (R$)<input name="target" type="number" min="0.02" step="0.01" placeholder="500,00" required></label>
           </div>
-          <button class="primary-button" type="submit">Salvar entrada</button>
-          <p class="helper">Os registros ficam salvos neste navegador. Ainda não há sincronização entre aparelhos.</p>
+          <div class="entry-actions"><button class="primary-button" type="submit">Criar alavancagem</button><button class="delete-btn" id="cancel-alavancagem" type="button">Cancelar</button></div>
         </form>
+        <div id="alavancagem-list" class="alavancagem-list"></div>
+        <p class="helper">O valor de cada entrada é informado manualmente. Green atualiza o saldo; Red encerra o bloco; ao atingir o objetivo, a alavancagem é finalizada e seu histórico permanece salvo.</p>
       </section>
       <section class="page" id="page-stats"><div class="section-heading"><div><p class="eyebrow">DESEMPENHO</p><h2>Estatísticas</h2></div></div><div class="stats-grid" id="full-stats"></div><div class="panel"><h3>Resultados registrados</h3><div id="result-breakdown" class="result-breakdown"></div></div></section>
       <section class="page" id="page-progress">
@@ -60,6 +58,6 @@
       <footer>GG Alavancagem <span>•</span> Ferramenta de controle e acompanhamento. Aposte com responsabilidade.</footer>
     </main>
   </div>
-  <script type="module" src="js/app.js?v=20261113-7"></script>
+  <script type="module" src="js/app.js?v=20261113-8"></script>
 </body>
 </html>
