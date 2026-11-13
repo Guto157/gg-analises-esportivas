@@ -97,7 +97,7 @@ async function catalog(request) {
       const response = await fetch(url, { headers: { "Accept": "application/json" } });
       if (!response.ok) return null;
       const data = await response.json();
-      const matches = (data.events || []).map(event => {
+      const matches = (data.events || []).filter(event => {\n        const kickoff = Date.parse(event.date || "");\n        return Number.isFinite(kickoff) && kickoff >= Date.now() && !event.status?.type?.completed;\n      }).map(event => {
         const competition = event.competitions?.[0] || {};
         const competitors = competition.competitors || [];
         const home = competitors.find(team => team.homeAway === "home") || competitors[0];
