@@ -32,6 +32,50 @@ const AGENTS = [
   }
 ];
 
+const DEMO_NOTICE = "SIMULAÇÃO: conteúdo fictício para testar a plataforma. Não é pesquisa real, não contém dados atuais e não deve orientar apostas.";
+
+function demoCatalog(sport) {
+  const basketball = String(sport).toLowerCase() === "basquete";
+  return json({
+    sport,
+    demo: true,
+    notice: DEMO_NOTICE,
+    updatedAt: new Date().toISOString(),
+    competitions: [{
+      id: "demo-league",
+      name: basketball ? "Liga de Demonstração de Basquete (FICTÍCIA)" : "Liga de Demonstração de Futebol (FICTÍCIA)",
+      matches: [
+        { id: "demo-1", name: basketball ? "Águias Azuis (fictício) x Lobos Verdes (fictício)" : "Atlético Azul (fictício) x União Verde (fictício)" },
+        { id: "demo-2", name: basketball ? "Trovões (fictício) x Cometas (fictício)" : "Estrela do Norte (fictício) x Real do Sul (fictício)" }
+      ]
+    }]
+  });
+}
+
+function demoAnalysis(input) {
+  const names = ["Histórico e dados", "Probabilidades", "Mercados", "Odds e valor", "Escalações e notícias"];
+  const agents = names.map((name, index) => ({
+    id: "demo-agent-" + (index + 1),
+    name,
+    report: DEMO_NOTICE + "\\n\\nEste relatório é um exemplo de interface. Nenhuma fonte foi consultada e nenhuma estatística, escalação, probabilidade ou cotação foi verificada. Para teste, este especialista demonstra apenas o formato de resposta.",
+    sources: []
+  }));
+  return json({
+    status: "demo",
+    demo: true,
+    notice: DEMO_NOTICE,
+    match: {
+      sport: clean(input.sport, 30),
+      competition: clean(input.competition, 100),
+      name: clean(input.match, 140),
+      market: clean(input.market, 100) || null
+    },
+    completedAt: new Date().toISOString(),
+    agents,
+    chief: DEMO_NOTICE + "\\n\\nDECISÃO DE DEMONSTRAÇÃO: NÃO ENTRAR. Não há pesquisa, dados reais, odds verificadas ou avaliação estatística nesta simulação."
+  });
+}
+
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), {
     status,
@@ -57,7 +101,7 @@ async function sportsRequest(url, key) {
 
 async function catalog(request, env) {
   const sport = new URL(request.url).searchParams.get("sport") || "Futebol";
-  const isBasketball = sport.toLowerCase() === "basquete";
+  if (env.DEMO_MODE === "true") return demoCatalog(sport);\n  const isBasketball = sport.toLowerCase() === "basquete";
   const key = isBasketball ? env.APISPORTS_BASKETBALL_KEY : env.APISPORTS_FOOTBALL_KEY;
   if (!key) return json({
     error: "API esportiva não configurada.",
@@ -217,7 +261,7 @@ export default {
     const url = new URL(request.url);
     if (url.pathname === "/api/health") {
       return json({
-        service: "GG Análises Esportivas",
+        service: "GG Análises Esportivas",\n        demoMode: env.DEMO_MODE === "true",
         aiConfigured: Boolean(env.GEMINI_API_KEY),
         webSearchConfigured: Boolean(env.BRAVE_SEARCH_API_KEY),
         footballCatalogConfigured: Boolean(env.APISPORTS_FOOTBALL_KEY),
