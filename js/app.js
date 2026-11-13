@@ -51,3 +51,68 @@ $('#entry-form').addEventListener('submit',e=>{e.preventDefault();const f=new Fo
 $('#simulate').addEventListener('click',()=>{const start=Number($('#progress-start').value),odd=Number($('#progress-odd').value),target=Number($('#progress-target').value),out=$('#progress-result');if(!(start>0&&odd>1&&target>start)){out.textContent='Confira os valores. O objetivo precisa ser maior que o valor inicial e a odd deve ser superior a 1.';return}let value=start,steps=0;while(value<target&&steps<100){value*=odd;steps++}out.innerHTML='Etapas necessárias: <strong>'+steps+'</strong><br>Valor projetado ao final: <strong>'+money(value)+'</strong><br>Valor inicial exposto: '+money(start)+'<br><span style="color:#91a2b9">Cálculo hipotético com green em todas as etapas.</span>'});
 render();
 loadCatalog();
+
+// Motor de análise: chama o backend seguro, nunca expõe chaves no navegador.
+const analysisButton=$('#analysis-button');
+const analysisPanel=document.createElement('section');
+analysisPanel.id='analysis-results';
+analysisPanel.className='panel';
+analysisPanel.hidden=true;
+analysisPanel.style.marginTop='18px';
+$('#page-analysis').appendChild(analysisPanel);
+
+function syncAnalysisButton(){
+  const ready=Boolean(competitionSelect.value&&matchSelect.value);
+  analysisButton.disabled=!ready;
+  analysisButton.textContent=ready?'Executar análise com os 6 agentes':'Selecione competição e partida';
+}
+competitionSelect.addEventListener('change',syncAnalysisButton);
+matchSelect.addEventListener('change',syncAnalysisButton);
+sportSelect.addEventListener('change',()=>{analysisButton.disabled=true;analysisButton.textContent='Carregando catálogo...'});
+const originalLoadCatalog=loadCatalog;
+loadCatalog=async function(){await originalLoadCatalog();syncAnalysisButton()};
+const originalUpdateMatches=updateMatches;
+updateMatches=function(){originalUpdateMatches();syncAnalysisButton()};
+
+function renderAnalysis(data){
+  const agents=Array.isArray(data.agents)?data.agents:[];
+  const cards=agents.map(agent=>{
+    const sources=Array.isArray(agent.sources)?agent.sources:[];
+    const links=sources.map(source=>source.url?'<li><a href="'+escapeHtml(source.url)+'" target="_blank" rel="noopener noreferrer">'+escapeHtml(source.title||source.url)+'</a></li>':'').join('');
+    return '<article class="agent-card"><span>ESPECIALISTA</span><h3>'+escapeHtml(agent.name||agent.id)+'</h3><p style="white-space:pre-wrap">'+escapeHtml(agent.report||'Relatório não retornado.')+'</p>'+(links?'<details><summary>Fontes consultadas ('+sources.length+')</summary><ul>'+links+'</ul></details>':'<p class="helper">Nenhuma fonte retornada.</p>')+'</article>';
+  }).join('');
+  analysisPanel.hidden=false;
+  analysisPanel.innerHTML='<div class="section-heading"><div><p class="eyebrow">RESULTADO DA PESQUISA</p><h2>Análise dos especialistas</h2><p class="muted">Concluída em '+fmtDate(data.completedAt)+'</p></div></div><div class="agents-grid">'+cards+'</div><div class="chief-report"><p class="eyebrow">DECISÃO DA IA CHEFE</p><h2>Consolidação final</h2><p style="white-space:pre-wrap">'+escapeHtml(data.chief||'A IA chefe não retornou uma conclusão.')+'</p></div>';
+  analysisPanel.scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+analysisButton.addEventListener('click',async()=>{
+  if(analysisButton.disabled)return;
+  const competition=catalog.find(item=>String(item.id??item.name)===competitionSelect.value);
+  const match=competition?.matches?.find(item=>String(item.id??item.name)===matchSelect.value);
+  if(!competition||!match)return;
+  analysisButton.disabled=true;
+  analysisButton.textContent='Os 5 especialistas estão pesquisando...';
+  analysisPanel.hidden=false;
+  analysisPanel.textContent='Aguardando os relatórios independentes. A IA chefe só será chamada depois que os cinco especialistas terminarem.';
+  try{
+    const response=await fetch('/api/analyze',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Accept':'application/json'},
+      body:JSON.stringify({
+        sport:sportSelect.value,
+        competition:competition.name,
+        match:match.name,
+        market:$('#analysis-type').value==='Mercado específico'?$('#market').value.trim():''
+      })
+    });
+    const data=await response.json();
+    if(!response.ok)throw new Error(data.error||data.detail||'O backend não conseguiu concluir a análise.');
+    renderAnalysis(data);
+  }catch(error){
+    analysisPanel.innerHTML='<h2>Não foi possível concluir a análise</h2><p>'+escapeHtml(error.message)+'</p><p class="helper">O motor precisa estar publicado no backend e conectado aos serviços de IA e pesquisa. Nenhuma recomendação fictícia será exibida.</p>';
+  }finally{
+    syncAnalysisButton();
+  }
+});
+syncAnalysisButton();
