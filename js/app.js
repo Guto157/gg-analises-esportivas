@@ -18,4 +18,3 @@ $('#simulate').addEventListener('click',()=>{const start=Number($('#progress-sta
 render();
 let savedPage='overview';try{savedPage=localStorage.getItem(PAGE_STORE)||'overview'}catch{}
 showPage(savedPage);
-loadCatalog();
