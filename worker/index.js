@@ -125,27 +125,19 @@ async function searchBrave(query, env) {
   }));
 }
 
-async function askGemini(prompt, env) {
-  if (!env.GEMINI_API_KEY) {
-    throw new Error("IA não configurada. Configure GEMINI_API_KEY no backend.");
-  }
-  const model = env.GEMINI_MODEL || "gemini-3.8-flash";
-  const endpoint = "https://generativelanguage.googleapis.com/v1beta/models/" +
-    encodeURIComponent(model) + ":generateContent?key=" + encodeURIComponent(env.GEMINI_API_KEY);
-  const response = await fetch(endpoint, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      contents: [{ role: "user", parts: [{ text: prompt }] }],
-      generationConfig: { temperature: 0.2, maxOutputTokens: 1800 }
-    })
+async function askAI(prompt, env) {
+  if (!env.AI) throw new Error("Workers AI não está conectado. Verifique o binding AI no Cloudflare.");
+  const response = await env.AI.run("@cf/google/gemma-4-26b-a4b-it", {
+    messages: [
+      { role: "system", content: "Você é um analista esportivo rigoroso. Nunca invente fatos, dados, fontes, escalações ou odds. Se faltarem evidências, declare a limitação." },
+      { role: "user", content: prompt }
+    ],
+    max_tokens: 1800,
+    temperature: 0.2
   });
-  if (!response.ok) {
-    const detail = await response.text();
-    throw new Error("Serviço de IA respondeu " + response.status + ": " + detail.slice(0, 240));
-  }
-  const data = await response.json();
-  return data.candidates?.[0]?.content?.parts?.map(part => part.text || "").join("\n") || "";
+  const answer = response?.choices?.[0]?.message?.content || response?.response || "";
+  if (!answer) throw new Error("O modelo de IA não retornou texto.");
+  return answer;
 }
 
 async function analyze(request, env) {
@@ -157,10 +149,10 @@ async function analyze(request, env) {
   if (!sport || !competition || !match) {
     return json({ error: "Informe esporte, competição e partida." }, 400);
   }
-  if (!env.GEMINI_API_KEY || !env.BRAVE_SEARCH_API_KEY) {
+  if (!env.AI || !env.BRAVE_SEARCH_API_KEY) {
     return json({
       error: "Os serviços de IA e pesquisa ainda não estão configurados.",
-      requiredSecrets: ["GEMINI_API_KEY", "BRAVE_SEARCH_API_KEY"]
+      requiredSecrets: ["BRAVE_SEARCH_API_KEY"], requiredBindings: ["AI"]
     }, 503);
   }
 
@@ -185,7 +177,7 @@ async function analyze(request, env) {
         "Responda em português brasileiro, de forma objetiva, com conclusão, limitações e fontes (título e URL).",
         "Resultados de pesquisa: " + JSON.stringify(sources)
       ].join("\n\n");
-      const report = await askGemini(prompt, env);
+      const report = await askAI(prompt, env);
       return { id: agent.id, name: agent.name, report, sources };
     }));
 
@@ -198,7 +190,7 @@ async function analyze(request, env) {
       "Partida: " + base + ". Mercado solicitado: " + (market || "análise completa") + ".",
       "Relatórios dos cinco especialistas: " + JSON.stringify(research)
     ].join("\n\n");
-    const finalReport = await askGemini(chiefPrompt, env);
+    const finalReport = await askAI(chiefPrompt, env);
     return json({
       status: "completed",
       match: { sport, competition, name: match, market: market || null },
@@ -218,7 +210,7 @@ export default {
     if (url.pathname === "/api/health") {
       return json({
         service: "GG Análises Esportivas",
-        aiConfigured: Boolean(env.GEMINI_API_KEY),
+        aiConfigured: Boolean(env.AI),
         webSearchConfigured: Boolean(env.BRAVE_SEARCH_API_KEY),
         footballCatalogConfigured: Boolean(env.APISPORTS_FOOTBALL_KEY),
         basketballCatalogConfigured: Boolean(env.APISPORTS_BASKETBALL_KEY)
