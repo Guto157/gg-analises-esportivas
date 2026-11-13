@@ -29,7 +29,7 @@
         <div class="stats-grid" id="overview-stats"></div>
         <div class="section-heading"><div><p class="eyebrow">ACOMPANHAMENTO</p><h2>Atividade recente</h2></div><button class="text-button" data-go="history">Ver histórico →</button></div>
         <div class="panel"><div id="recent-list" class="empty-state">Suas entradas registradas aparecerão aqui.</div></div>
-        <p class="notice"><strong>Transparência:</strong> o sistema usa dados públicos e IA com cota gratuita limitada. Odds só serão consideradas quando houver cotação verificável. Sem evidência suficiente, a decisão será NÃO ENTRAR.</p>
+        <p class="notice"><strong>Transparência:</strong> a IA roda no aparelho, sem chave ou mensalidade. Na primeira utilização, o modelo é baixado e exige WebGPU. Os dados vêm de feeds públicos não oficiais da ESPN. Sem evidência ou odd verificável, a decisão é NÃO ENTRAR.</p>
       </section>
       <section class="page" id="page-analysis">
         <div class="section-heading"><div><p class="eyebrow">CENTRAL DE ANÁLISE</p><h2>Nova análise pré-jogo</h2><p class="muted">Selecione uma partida para direcionar a pesquisa dos especialistas.</p></div></div>
@@ -41,8 +41,8 @@
             <label class="full">Tipo de análise<select id="analysis-type"><option>Análise completa</option><option>Mercado específico</option></select></label>
             <label class="full">Mercado (opcional)<input id="market" placeholder="Ex.: Mais de 2.5 gols"></label>
           </div>
-          <button class="primary-button" id="analysis-button" disabled>Executar análise com os 6 agentes</button>
-          <p class="helper" id="catalog-status" role="status">Competições e partidas são carregadas de feeds públicos. A disponibilidade varia conforme a cobertura da fonte.</p>
+          <button class="primary-button" id="analysis-button" disabled>Carregar IA local e analisar</button>
+          <p class="helper" id="catalog-status" role="status">Partidas futuras carregadas diretamente do feed público da ESPN. A análise usa IA local e pode exigir um primeiro download do modelo.</p>
         </div>
         <div class="agents-grid">
           <article class="agent-card"><span>01</span><h3>Histórico e dados</h3><p>Forma, confrontos e desempenho.</p></article>
@@ -83,6 +83,6 @@
       <footer>GG Análises Esportivas <span>•</span> Ferramenta de organização e estudo. Aposte com responsabilidade.</footer>
     </main>
   </div>
-  <script src="js/app.js"></script>
+  <script type="module" src="js/app.js"></script>
 </body>
 </html>
