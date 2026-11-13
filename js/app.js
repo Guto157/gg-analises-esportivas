@@ -1,5 +1,5 @@
 import { loadLocalAI, runLocalAgent, LOCAL_MODEL } from './local-ai.js';
-const $=s=>document.querySelector(s);const $$=s=>[...document.querySelectorAll(s)];const STORE='gg-analises-entries-v1';let entries=load();
+const $=s=>document.querySelector(s);const $$=s=>[...document.querySelectorAll(s)];const STORE='gg-analises-entries-v1';const PAGE_STORE='gg-analises-active-page-v1';let entries=load();
 
 const sportSelect=$('#sport'),competitionSelect=$('#competition'),matchSelect=$('#match'),catalogStatus=$('#catalog-status');
 let catalog=[];
@@ -78,7 +78,7 @@ function load(){try{return JSON.parse(localStorage.getItem(STORE)||'[]')}catch{r
 function save(){localStorage.setItem(STORE,JSON.stringify(entries));render()}
 function money(v){return Number(v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'})}
 function fmtDate(v){if(!v)return 'Data não informada';const d=new Date(v);return Number.isNaN(d.getTime())?v:d.toLocaleString('pt-BR')}
-function showPage(name){$$('.page').forEach(p=>p.classList.toggle('active',p.id==='page-'+name));$$('.nav-link').forEach(b=>b.classList.toggle('active',b.dataset.page===name));const titles={overview:'Visão geral',analysis:'Analisar partida',history:'Histórico',entries:'Minhas entradas',stats:'Estatísticas',progress:'Progressão'};$('#page-title').textContent=titles[name]||'GG Análises'}
+function showPage(name){const pages=['overview','analysis','history','entries','stats','progress'];if(!pages.includes(name))name='overview';$('.page').forEach(p=>p.classList.toggle('active',p.id==='page-'+name));$('.nav-link').forEach(b=>{const active=b.dataset.page===name;b.classList.toggle('active',active);if(active)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current')});const titles={overview:'Visão geral',analysis:'Analisar partida',history:'Histórico',entries:'Minhas entradas',stats:'Estatísticas',progress:'Progressão'};$('#page-title').textContent=titles[name];try{localStorage.setItem(PAGE_STORE,name)}catch{}}
 function totals(){const settled=entries.filter(e=>['Green','Red'].includes(e.status));const greens=entries.filter(e=>e.status==='Green').length,reds=entries.filter(e=>e.status==='Red').length,voids=entries.filter(e=>e.status==='Anulado').length,cashouts=entries.filter(e=>e.status==='Cashout').length;const invested=entries.reduce((s,e)=>s+Number(e.stake),0);const net=entries.reduce((s,e)=>s+(e.status==='Green'?Number(e.stake)*(Number(e.odd)-1):e.status==='Red'?-Number(e.stake):e.status==='Cashout'?Number(e.cashout)-Number(e.stake):0),0);return{greens,reds,voids,cashouts,invested,net,rate:settled.length?greens/settled.length*100:0,count:entries.length,roi:invested?net/invested*100:0}}
 function statCard(label,value,sub=''){return '<div class="stat-card"><span>'+label+'</span><strong>'+value+'</strong><small>'+sub+'</small></div>'}
 function cards(){const t=totals();$('#overview-stats').innerHTML=statCard('Entradas registradas',t.count,'Total de registros')+statCard('Taxa de acerto',t.rate.toFixed(1)+'%','Greens ÷ (greens + reds)')+statCard('Resultado líquido',money(t.net),'Considera cashouts informados')+statCard('ROI',t.roi.toFixed(1)+'%','Lucro líquido ÷ total apostado');$('#full-stats').innerHTML=statCard('Greens',t.greens,'Entradas vencedoras')+statCard('Reds',t.reds,'Entradas perdedoras')+statCard('Anuladas',t.voids,'Stake devolvida')+statCard('Cashouts',t.cashouts,'Saída antecipada')+statCard('Taxa de acerto',t.rate.toFixed(1)+'%','Sem anuladas e cashouts')+statCard('Total apostado',money(t.invested),'Soma das stakes')+statCard('Lucro / prejuízo',money(t.net),'Resultado líquido')+statCard('ROI',t.roi.toFixed(1)+'%','Sobre o total apostado');$('#result-breakdown').innerHTML=[['Green',t.greens],['Red',t.reds],['Anulado',t.voids],['Cashout',t.cashouts],['Sem resultado',entries.filter(e=>!e.status).length]].map(x=>'<div class="result-pill">'+x[0]+' <strong>'+x[1]+'</strong></div>').join('')}
@@ -207,4 +207,6 @@ analysisButton.addEventListener('click',async()=>{
 });
 syncAnalysisButton();
 render();
+let savedPage='overview';try{savedPage=localStorage.getItem(PAGE_STORE)||'overview'}catch{}
+showPage(savedPage);
 loadCatalog();
