@@ -55,74 +55,109 @@ async function sportsRequest(url, key) {
   return data.response || [];
 }
 
-async function catalog(request, env) {
-  const sport = new URL(request.url).searchParams.get("sport") || "Futebol";
-  const isBasketball = sport.toLowerCase() === "basquete";
-  const key = isBasketball ? env.APISPORTS_BASKETBALL_KEY : env.APISPORTS_FOOTBALL_KEY;
-  if (!key) return json({
-    error: "API esportiva não configurada.",
-    setup: isBasketball ? "Configure APISPORTS_BASKETBALL_KEY no backend." : "Configure APISPORTS_FOOTBALL_KEY no backend."
-  }, 503);
+const ESPN_LEAGUES = {
+  Futebol: [
+    { id: "bra.1", name: "Campeonato Brasileiro Série A" },
+    { id: "bra.2", name: "Campeonato Brasileiro Série B" },
+    { id: "eng.1", name: "Premier League" },
+    { id: "esp.1", name: "LaLiga" },
+    { id: "ita.1", name: "Serie A" },
+    { id: "ger.1", name: "Bundesliga" },
+    { id: "fra.1", name: "Ligue 1" },
+    { id: "uefa.champions", name: "UEFA Champions League" },
+    { id: "uefa.europa", name: "UEFA Europa League" },
+    { id: "usa.1", name: "MLS" },
+    { id: "mex.1", name: "Liga MX" }
+  ],
+  Basquete: [
+    { id: "nba", name: "NBA" },
+    { id: "wnba", name: "WNBA" },
+    { id: "mens-college-basketball", name: "Basquete universitário masculino (NCAA)" },
+    { id: "womens-college-basketball", name: "Basquete universitário feminino (NCAA)" }
+  ]
+};
 
-  try {
-    let games = [];
-    if (isBasketball) {
-      const today = new Date().toISOString().slice(0, 10);
-      games = await sportsRequest("https://v1.basketball.api-sports.io/games?date=" + today, key);
-    } else {
-      games = await sportsRequest("https://v3.football.api-sports.io/fixtures?next=50", key);
-    }
-
-    const groups = new Map();
-    for (const game of games) {
-      const league = game.league || {};
-      const home = game.teams?.home?.name || game.teams?.home?.[0]?.name || game.teams?.[0]?.name;
-      const away = game.teams?.away?.name || game.teams?.away?.[1]?.name;
-      const matchName = [home, away].filter(Boolean).join(" x ");
-      if (!matchName) continue;
-      const leagueName = league.name || "Outras competições";
-      const leagueId = String(league.id || leagueName);
-      if (!groups.has(leagueId)) groups.set(leagueId, {
-        id: leagueId,
-        name: leagueName,
-        matches: []
-      });
-      groups.get(leagueId).matches.push({
-        id: String(game.fixture?.id || game.id || matchName),
-        name: matchName,
-        date: game.fixture?.date || game.date || null
-      });
-    }
-
-    return json({
-      sport,
-      updatedAt: new Date().toISOString(),
-      competitions: [...groups.values()]
-    });
-  } catch (error) {
-    return json({ error: "Não foi possível carregar o catálogo.", detail: error.message }, 502);
-  }
+function espnDate(date) {
+  return date.toISOString().slice(0, 10).replaceAll("-", "");
 }
 
-async function searchBrave(query, env) {
-  if (!env.BRAVE_SEARCH_API_KEY) {
-    throw new Error("Pesquisa web não configurada. Configure BRAVE_SEARCH_API_KEY no backend.");
-  }
-  const url = new URL("https://api.search.brave.com/res/v1/web/search");
-  url.searchParams.set("q", query);
-  url.searchParams.set("count", "6");
-  url.searchParams.set("freshness", "pm");
-  const response = await fetch(url, {
-    headers: { "X-Subscription-Token": env.BRAVE_SEARCH_API_KEY, "Accept": "application/json" }
-  });
-  if (!response.ok) throw new Error("Pesquisa web respondeu " + response.status);
-  const data = await response.json();
-  return (data.web?.results || []).map(item => ({
-    title: item.title || "",
-    url: item.url || "",
-    description: item.description || "",
-    age: item.age || item.page_age || null
+async function catalog(request) {
+  const sport = new URL(request.url).searchParams.get("sport") || "Futebol";
+  const leagues = ESPN_LEAGUES[sport] || ESPN_LEAGUES.Futebol;
+  const category = sport === "Basquete" ? "basketball" : "soccer";
+  const from = new Date();
+  const to = new Date(from.getTime() + 14 * 86400000);
+  const dates = espnDate(from) + "-" + espnDate(to);
+
+  const results = await Promise.all(leagues.map(async league => {
+    try {
+      const url = "https://site.api.espn.com/apis/site/v2/sports/" +
+        category + "/" + encodeURIComponent(league.id) +
+        "/scoreboard?limit=100&dates=" + dates;
+      const response = await fetch(url, { headers: { "Accept": "application/json" } });
+      if (!response.ok) return null;
+      const data = await response.json();
+      const matches = (data.events || []).map(event => {
+        const competition = event.competitions?.[0] || {};
+        const competitors = competition.competitors || [];
+        const home = competitors.find(team => team.homeAway === "home") || competitors[0];
+        const away = competitors.find(team => team.homeAway === "away") || competitors[1];
+        const homeName = home?.team?.displayName || home?.team?.name;
+        const awayName = away?.team?.displayName || away?.team?.name;
+        if (!homeName || !awayName) return null;
+        return {
+          id: String(event.id),
+          name: homeName + " x " + awayName,
+          date: event.date || null,
+          status: event.status?.type?.description || "Agendada"
+        };
+      }).filter(Boolean);
+      return matches.length ? {
+        id: league.id,
+        name: league.name,
+        matches
+      } : null;
+    } catch {
+      return null;
+    }
   }));
+
+  const competitions = results.filter(Boolean);
+  return json({
+    sport,
+    provider: "ESPN (feed público não oficial)",
+    updatedAt: new Date().toISOString(),
+    competitions,
+    notice: competitions.length
+      ? null
+      : "A fonte pública não retornou partidas para as competições consultadas neste período."
+  });
+}
+
+function decodeXml(value) {
+  return String(value || "").replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, "$1")
+    .replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"').replace(/&#39;/g, "'");
+}
+
+async function searchNews(query) {
+  const url = "https://news.google.com/rss/search?q=" +
+    encodeURIComponent(query) + "&hl=pt-BR&gl=BR&ceid=BR:pt-419";
+  const response = await fetch(url, { headers: { "Accept": "application/rss+xml, application/xml" } });
+  if (!response.ok) throw new Error("A busca pública de notícias respondeu " + response.status);
+  const xml = await response.text();
+  const items = [...xml.matchAll(/<item>([\s\S]*?)<\/item>/gi)].slice(0, 6);
+  return items.map(match => {
+    const block = match[1];
+    const field = name => decodeXml(block.match(new RegExp("<" + name + ">([\\s\\S]*?)<\/" + name + ">", "i"))?.[1] || "");
+    return {
+      title: field("title"),
+      url: field("link"),
+      description: field("description").replace(/<[^>]*>/g, "").slice(0, 500),
+      publishedAt: field("pubDate"),
+      source: field("source")
+    };
+  }).filter(item => item.title && item.url);
 }
 
 async function askAI(prompt, env) {
@@ -149,10 +184,10 @@ async function analyze(request, env) {
   if (!sport || !competition || !match) {
     return json({ error: "Informe esporte, competição e partida." }, 400);
   }
-  if (!env.AI || !env.BRAVE_SEARCH_API_KEY) {
+  if (!env.AI) {
     return json({
       error: "Os serviços de IA e pesquisa ainda não estão configurados.",
-      requiredSecrets: ["BRAVE_SEARCH_API_KEY"], requiredBindings: ["AI"]
+      requiredBindings: ["AI"]
     }, 503);
   }
 
@@ -167,7 +202,7 @@ async function analyze(request, env) {
         odds: "odds pré-jogo cotações bookmakers",
         noticias: "lesões suspensões escalações notícias últimas"
       })[agent.id];
-      const sources = await searchBrave(query, env);
+      const sources = await searchNews(query);
       const prompt = [
         "Você é o especialista " + agent.name + " do GG Análises Esportivas.",
         agent.task,
@@ -211,12 +246,12 @@ export default {
       return json({
         service: "GG Análises Esportivas",
         aiConfigured: Boolean(env.AI),
-        webSearchConfigured: Boolean(env.BRAVE_SEARCH_API_KEY),
+        webSearchConfigured: true,\n        sportsDataProvider: "ESPN público",
         footballCatalogConfigured: Boolean(env.APISPORTS_FOOTBALL_KEY),
         basketballCatalogConfigured: Boolean(env.APISPORTS_BASKETBALL_KEY)
       });
     }
-    if (url.pathname === "/api/catalog" && request.method === "GET") return catalog(request, env);
+    if (url.pathname === "/api/catalog" && request.method === "GET") return catalog(request);
     if (url.pathname === "/api/analyze" && request.method === "POST") return analyze(request, env);
     if (request.method === "GET" || request.method === "HEAD") return env.ASSETS.fetch(request);
     return json({ error: "Rota não encontrada." }, 404);
