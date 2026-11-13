@@ -229,7 +229,7 @@ async function analyze(request, env) {
         odds: "odds pré-jogo cotações bookmakers",
         noticias: "lesões suspensões escalações notícias últimas"
       })[agent.id];
-      const sources = await searchNews(query);
+      let sources = [];\n      try { sources = await searchNews(query); } catch { sources = []; }
       const prompt = [
         "Você é o especialista " + agent.name + " do GG Análises Esportivas.",
         agent.task,
