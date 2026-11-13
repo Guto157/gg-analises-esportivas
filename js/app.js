@@ -102,6 +102,8 @@ analysisButton.addEventListener('click',async()=>{
       body:JSON.stringify({
         sport:sportSelect.value,
         competition:competition.name,
+        leagueId:String(competition.id),
+        eventId:String(match.id),
         match:match.name,
         market:$('#analysis-type').value==='Mercado específico'?$('#market').value.trim():''
       })
