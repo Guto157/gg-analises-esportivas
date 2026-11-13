@@ -246,9 +246,9 @@ export default {
       return json({
         service: "GG Análises Esportivas",
         aiConfigured: Boolean(env.AI),
-        webSearchConfigured: true,\n        sportsDataProvider: "ESPN público",
-        footballCatalogConfigured: Boolean(env.APISPORTS_FOOTBALL_KEY),
-        basketballCatalogConfigured: Boolean(env.APISPORTS_BASKETBALL_KEY)
+        webSearchConfigured: true,
+        sportsDataProvider: "ESPN público",
+        catalogProvider: "ESPN público"
       });
     }
     if (url.pathname === "/api/catalog" && request.method === "GET") return catalog(request);
