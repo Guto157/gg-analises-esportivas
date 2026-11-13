@@ -14,7 +14,6 @@
       <a class="brand" href="#" aria-label="GG Análises Esportivas início"><span class="brand-mark">GG</span><span><strong>GG Análises</strong><small>ESPORTIVAS</small></span></a>
       <nav id="navigation" class="navigation" aria-label="Navegação principal">
         <button class="nav-link active" data-page="overview"><span>⌂</span> Visão geral</button>
-        <button class="nav-link" data-page="analysis"><span>⌕</span> Analisar partida</button>
         <button class="nav-link" data-page="history"><span>▤</span> Histórico</button>
         <button class="nav-link" data-page="entries"><span>＋</span> Minhas entradas</button>
         <button class="nav-link" data-page="stats"><span>▥</span> Estatísticas</button>
@@ -30,28 +29,6 @@
         <div class="section-heading"><div><p class="eyebrow">ACOMPANHAMENTO</p><h2>Atividade recente</h2></div><button class="text-button" data-go="history">Ver histórico →</button></div>
         <div class="panel"><div id="recent-list" class="empty-state">Suas entradas registradas aparecerão aqui.</div></div>
         <p class="notice"><strong>Transparência:</strong> a IA roda no aparelho, sem chave ou mensalidade. Na primeira utilização, o modelo é baixado e exige WebGPU. Os dados esportivos vêm da API SportScore. Odds só serão consideradas quando a fonte fornecer cotações verificáveis. Sem evidência ou odd verificável, a decisão é NÃO ENTRAR.</p>
-      </section>
-      <section class="page" id="page-analysis">
-        <div class="section-heading"><div><p class="eyebrow">CENTRAL DE ANÁLISE</p><h2>Nova análise pré-jogo</h2><p class="muted">Selecione uma partida para direcionar a pesquisa dos especialistas.</p></div></div>
-        <div class="panel">
-          <div class="form-grid">
-            <label>Esporte<select id="sport"><option value="Futebol">Futebol</option><option value="Basquete">Basquete</option></select></label>
-            <label>Competição<select id="competition" disabled><option value="">Aguardando catálogo de competições...</option></select></label>
-            <label class="full">Partida<select id="match" disabled><option value="">Selecione primeiro a competição</option></select></label>
-            <label class="full">Tipo de análise<select id="analysis-type"><option>Análise completa</option><option>Mercado específico</option></select></label>
-            <label class="full">Mercado (opcional)<input id="market" placeholder="Ex.: Mais de 2.5 gols"></label>
-          </div>
-          <button class="primary-button" id="analysis-button" disabled>Carregar IA local e analisar</button>
-          <p class="helper" id="catalog-status" role="status">Partidas futuras consultadas na API SportScore. A análise usa IA local e pode exigir um primeiro download do modelo.</p>
-        </div>
-        <div class="agents-grid">
-          <article class="agent-card"><span>01</span><h3>Histórico e dados</h3><p>Forma, confrontos e desempenho.</p></article>
-          <article class="agent-card"><span>02</span><h3>Probabilidades</h3><p>Estimativas fundamentadas em dados.</p></article>
-          <article class="agent-card"><span>03</span><h3>Mercados</h3><p>Oportunidades por tipo de mercado.</p></article>
-          <article class="agent-card"><span>04</span><h3>Odds e valor</h3><p>Odds reais, odd justa e valor esperado.</p></article>
-          <article class="agent-card"><span>05</span><h3>Escalações e notícias</h3><p>Desfalques, titulares e notícias recentes.</p></article>
-          <article class="agent-card chief"><span>06</span><h3>IA chefe</h3><p>Confronta os relatórios e consolida a decisão.</p></article>
-        </div>
       </section>
       <section class="page" id="page-history"><div class="section-heading"><div><p class="eyebrow">REGISTROS</p><h2>Histórico de entradas</h2></div></div><div class="panel"><div id="history-list" class="empty-state">Nenhuma entrada registrada ainda.</div></div></section>
       <section class="page" id="page-entries">
@@ -83,6 +60,6 @@
       <footer>GG Análises Esportivas <span>•</span> Ferramenta de organização e estudo. Aposte com responsabilidade. <a href="https://sportscore.com/" rel="dofollow" target="_blank" title="Dados esportivos fornecidos por SportScore" style="color:#35d4dc">Powered by SportScore</a></footer>
     </main>
   </div>
-  <script type="module" src="js/app.js?v=20261113-5"></script>
+  <script type="module" src="js/app.js?v=20261113-6"></script>
 </body>
 </html>
