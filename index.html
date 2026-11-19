@@ -22,6 +22,7 @@
         <button class="nav-link" data-page="history"><span>▤</span> Histórico</button>
         <button class="nav-link" data-page="entries"><span>＋</span> Minhas entradas</button>
         <button class="nav-link" data-page="stats"><span>▥</span> Estatísticas</button>
+        <button class="nav-link" data-page="wallet-history"><span>▣</span> Carteira</button>
       </nav>
       <div class="sidebar-bottom"><span class="status-dot"></span> Painel em desenvolvimento</div>
     </aside>
@@ -62,7 +63,7 @@
         <div id="alavancagem-list" class="alavancagem-list"></div>
         <p class="helper">O valor de cada entrada é informado manualmente. Green atualiza o saldo; Red encerra o bloco; ao atingir o objetivo, a alavancagem é finalizada e seu histórico permanece salvo.</p>
       </section>
-      <section class="page" id="page-stats"><div class="section-heading"><div><p class="eyebrow">DESEMPENHO</p><h2>Estatísticas</h2></div></div><div class="stats-grid" id="full-stats"></div><div class="panel"><h3>Resultados registrados</h3><div id="result-breakdown" class="result-breakdown"></div></div></section>
+      <section class="page" id="page-stats"><div class="section-heading"><div><p class="eyebrow">DESEMPENHO</p><h2>Estatísticas</h2></div></div><div class="stats-grid" id="full-stats"></div><div class="panel"><h3>Resultados registrados</h3><div id="result-breakdown" class="result-breakdown"></div></div></section><section class="page" id="page-wallet-history"><div class="section-heading"><div><p class="eyebrow">CONTROLE FINANCEIRO</p><h2>Histórico da carteira</h2><p class="muted">Acompanhe tudo que entrou e saiu para conferir seu resultado antes de retirar.</p></div></div><div class="stats-grid wallet-history-stats"><div class="stat-card"><span>Total de entradas</span><strong id="wallet-total-in">R$ 0,00</strong><small>Depósitos e valores recebidos</small></div><div class="stat-card"><span>Total de saídas</span><strong id="wallet-total-out">R$ 0,00</strong><small>Retiradas e valores apostados</small></div><div class="stat-card"><span>Diferença geral</span><strong id="wallet-difference">R$ 0,00</strong><small>Entradas menos saídas</small></div><div class="stat-card"><span>Lucro / prejuízo nas apostas</span><strong id="wallet-bet-result">R$ 0,00</strong><small>Retornos menos stakes</small></div></div><div class="panel wallet-history-panel"><div class="wallet-history-heading"><h3>Movimentações</h3><span>Mais recentes primeiro</span></div><div id="wallet-history-list" class="wallet-history-list"><div class="empty-state">As movimentações da carteira aparecerão aqui.</div></div></div><p class="helper">O histórico começa a registrar a partir desta atualização. Movimentações antigas não podem ser recuperadas automaticamente. O saldo que já existia será mostrado como saldo inicial, sem entrar nos totais.</p></section>
       <footer>GG Alavancagem <span>•</span> Ferramenta de controle e acompanhamento. Aposte com responsabilidade.</footer>
     </main>
     </div>
